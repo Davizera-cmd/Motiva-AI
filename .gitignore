@@ -1,0 +1,40 @@
+# Dependências de Pacotes (Node e Flutter)
+node_modules/
+motiva-ai_api/node_modules/
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+build/
+motiva-ai_app/.dart_tool/
+motiva-ai_app/.flutter-plugins
+motiva-ai_app/.flutter-plugins-dependencies
+motiva-ai_app/build/
+
+# Variáveis de Ambiente
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+motiva-ai_api/.env
+motiva-ai_app/.env
+
+motiva-ai_app/android/app/debug/
+motiva-ai_app/android/app/profile/
+motiva-ai_app/android/app/release/
+
+# Logs e Arquivos Temporários de Sistema
+*.log
+.DS_Store
+Thumbs.db
+*.swp
+*.class
+
+# Configurações Locais de IDEs
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
