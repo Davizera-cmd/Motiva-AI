@@ -3,16 +3,19 @@ import 'package:provider/provider.dart';
 import 'package:motiva_ai/controllers/diary_controller.dart';
 import 'package:motiva_ai/core/constants/app_colors.dart';
 
-/// AddEntryBottomSheet — formulário para adicionar relatos no diário (RF05).
-class AddEntryBottomSheet extends StatefulWidget {
-  const AddEntryBottomSheet({super.key});
+import 'package:motiva_ai/models/diary_entry.dart';
 
-  static Future<void> show(BuildContext context) {
+/// AddEntryBottomSheet — formulário para adicionar ou editar relatos no diário (RF05).
+class AddEntryBottomSheet extends StatefulWidget {
+  final DiaryEntry? entryToEdit;
+  const AddEntryBottomSheet({super.key, this.entryToEdit});
+
+  static Future<void> show(BuildContext context, {DiaryEntry? entryToEdit}) {
     return showModalBottomSheet(
       context:            context,
       isScrollControlled: true,
       backgroundColor:    Colors.transparent,
-      builder:            (_) => const AddEntryBottomSheet(),
+      builder:            (_) => AddEntryBottomSheet(entryToEdit: entryToEdit),
     );
   }
 
@@ -28,14 +31,33 @@ class _AddEntryBottomSheetState extends State<AddEntryBottomSheet> {
   static const _difficulties = ['Fácil', 'Médio', 'Difícil'];
 
   @override
+  void initState() {
+    super.initState();
+    if (widget.entryToEdit != null) {
+      _difficulty = widget.entryToEdit!.difficulty;
+      _notesCtrl.text = widget.entryToEdit!.notes;
+    }
+  }
+
+  @override
   void dispose() { _notesCtrl.dispose(); super.dispose(); }
 
   Future<void> _save() async {
     setState(() => _isSaving = true);
-    await context.read<DiaryController>().addEntry(
-      difficulty: _difficulty,
-      notes:      _notesCtrl.text.trim(),
-    );
+    if (widget.entryToEdit != null) {
+      final updatedEntry = DiaryEntry(
+        id: widget.entryToEdit!.id,
+        dateInMillis: widget.entryToEdit!.dateInMillis,
+        difficulty: _difficulty,
+        notes: _notesCtrl.text.trim(),
+      );
+      await context.read<DiaryController>().updateEntry(updatedEntry);
+    } else {
+      await context.read<DiaryController>().addEntry(
+        difficulty: _difficulty,
+        notes:      _notesCtrl.text.trim(),
+      );
+    }
     if (mounted) Navigator.of(context).pop();
   }
 
@@ -59,7 +81,7 @@ class _AddEntryBottomSheetState extends State<AddEntryBottomSheet> {
             ),
           ),
           const SizedBox(height: 20),
-          const Text('Novo Relato', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          Text(widget.entryToEdit != null ? 'Editar Relato' : 'Novo Relato', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           const SizedBox(height: 16),
           const Text('Como foi hoje?', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
           const SizedBox(height: 8),

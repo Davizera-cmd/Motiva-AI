@@ -23,4 +23,16 @@ class DiaryController extends ChangeNotifier {
     _entries = StorageService.getDiaryEntries();
     notifyListeners();
   }
+
+  Future<void> updateEntry(DiaryEntry entry) async {
+    await StorageService.saveDiaryEntry(entry);
+    _entries = StorageService.getDiaryEntries();
+    notifyListeners();
+  }
+
+  Future<void> deleteEntry(String id) async {
+    await StorageService.deleteDiaryEntry(id);
+    _entries = StorageService.getDiaryEntries();
+    notifyListeners();
+  }
 }

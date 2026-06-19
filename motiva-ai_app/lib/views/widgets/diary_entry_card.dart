@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:motiva_ai/models/diary_entry.dart';
 import 'package:motiva_ai/core/constants/app_colors.dart';
-import 'package:motiva_ai/services/pdf_export_service.dart';
+import 'package:motiva_ai/controllers/diary_controller.dart';
+import 'package:motiva_ai/views/widgets/add_entry_bottom_sheet.dart';
 
 /// DiaryEntryCard — card de relato do diário (RF05).
 class DiaryEntryCard extends StatelessWidget {
@@ -24,13 +26,53 @@ class DiaryEntryCard extends StatelessWidget {
                 ),
                 const Spacer(),
                 _DifficultyBadge(difficulty: entry.difficulty),
-                const SizedBox(width: 8),
-                IconButton(
-                  icon: const Icon(Icons.picture_as_pdf, size: 20, color: AppColors.gray),
-                  onPressed: () => PdfExportService.exportDiary(entry),
-                  tooltip: 'Exportar PDF',
+                const SizedBox(width: 4),
+                PopupMenuButton<String>(
+                  icon: const Icon(Icons.more_vert, size: 20, color: AppColors.gray),
                   padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
+                  itemBuilder: (context) => [
+                    const PopupMenuItem(
+                      value: 'edit',
+                      child: Row(children: [Icon(Icons.edit_outlined, size: 18), SizedBox(width: 8), Text('Editar')]),
+                    ),
+                    const PopupMenuItem(
+                      value: 'delete',
+                      child: Row(children: [Icon(Icons.delete_outline, size: 18, color: AppColors.error), SizedBox(width: 8), Text('Excluir', style: TextStyle(color: AppColors.error))]),
+                    ),
+                  ],
+                  onSelected: (value) async {
+                    if (value == 'edit') {
+                      AddEntryBottomSheet.show(context, entryToEdit: entry);
+                    } else if (value == 'delete') {
+                      final confirm = await showDialog<bool>(
+                        context: context,
+                        builder: (_) => AlertDialog(
+                          backgroundColor: AppColors.white,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                          title: const Text('Excluir Relato', style: TextStyle(fontWeight: FontWeight.bold)),
+                          content: const Text('Tem certeza que deseja excluir este relato permanentemente?'),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(context, false),
+                              child: const Text('Cancelar', style: TextStyle(color: AppColors.gray, fontWeight: FontWeight.bold)),
+                            ),
+                            ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColors.error,
+                                foregroundColor: AppColors.white,
+                                elevation: 0,
+                              ),
+                              onPressed: () => Navigator.pop(context, true),
+                              child: const Text('Excluir', style: TextStyle(fontWeight: FontWeight.bold)),
+                            ),
+                          ],
+                        ),
+                      );
+                      if (confirm == true && context.mounted) {
+                        context.read<DiaryController>().deleteEntry(entry.id);
+                      }
+                    }
+                  },
                 ),
               ],
             ),

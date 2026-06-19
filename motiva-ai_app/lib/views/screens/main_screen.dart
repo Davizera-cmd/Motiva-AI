@@ -7,6 +7,7 @@ import 'package:motiva_ai/core/constants/app_colors.dart';
 import 'package:motiva_ai/views/widgets/abstinence_counter_widget.dart';
 import 'package:motiva_ai/views/screens/settings_screen.dart';
 import 'package:motiva_ai/views/screens/diary_screen.dart';
+import 'package:motiva_ai/services/pdf_export_service.dart';
 
 class MainScreen extends StatefulWidget {
   final VoidCallback onSettingsTap;
@@ -121,6 +122,51 @@ class _MainScreenState extends State<MainScreen> {
           style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.motivTextBlack),
         ),
         centerTitle: true,
+        actions: [
+          if (_currentIndex == 1)
+            IconButton(
+              icon: const Icon(Icons.picture_as_pdf, color: AppColors.motivTextBlack),
+              tooltip: 'Exportar Diário',
+              onPressed: () async {
+                final dateRange = await showDateRangePicker(
+                  context: context,
+                  firstDate: DateTime(2020),
+                  lastDate: DateTime.now(),
+                  builder: (context, child) {
+                    return Theme(
+                      data: Theme.of(context).copyWith(
+                        colorScheme: const ColorScheme.light(
+                          primary: AppColors.motivYellowDark,
+                          onPrimary: Colors.white,
+                          onSurface: AppColors.motivTextBlack,
+                        ),
+                      ),
+                      child: child!,
+                    );
+                  },
+                );
+
+                if (dateRange != null && context.mounted) {
+                  final allEntries = context.read<DiaryController>().entries;
+                  final startDate = dateRange.start;
+                  final endDate = DateTime(dateRange.end.year, dateRange.end.month, dateRange.end.day, 23, 59, 59);
+
+                  final filtered = allEntries.where((e) {
+                    final d = DateTime.fromMillisecondsSinceEpoch(e.dateInMillis);
+                    return d.isAfter(startDate.subtract(const Duration(seconds: 1))) && d.isBefore(endDate.add(const Duration(seconds: 1)));
+                  }).toList();
+
+                  if (filtered.isEmpty) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Nenhum relato encontrado neste período.')),
+                    );
+                  } else {
+                    await PdfExportService.exportDiary(filtered, startDate, dateRange.end);
+                  }
+                }
+              },
+            ),
+        ],
       ),
       body: IndexedStack(
         index: _currentIndex,

@@ -31,4 +31,7 @@ class StorageService {
 
   static Future<void> saveDiaryEntry(DiaryEntry entry) async =>
       Hive.box<DiaryEntry>(_diaryBoxName).put(entry.id, entry);
+
+  static Future<void> deleteDiaryEntry(String id) async =>
+      Hive.box<DiaryEntry>(_diaryBoxName).delete(id);
 }
