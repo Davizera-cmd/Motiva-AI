@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:motiva_ai/models/diary_entry.dart';
 import 'package:motiva_ai/core/constants/app_colors.dart';
+import 'package:motiva_ai/services/pdf_export_service.dart';
 
 /// DiaryEntryCard — card de relato do diário (RF05).
 class DiaryEntryCard extends StatelessWidget {
@@ -23,6 +24,14 @@ class DiaryEntryCard extends StatelessWidget {
                 ),
                 const Spacer(),
                 _DifficultyBadge(difficulty: entry.difficulty),
+                const SizedBox(width: 8),
+                IconButton(
+                  icon: const Icon(Icons.picture_as_pdf, size: 20, color: AppColors.gray),
+                  onPressed: () => PdfExportService.exportDiary(entry),
+                  tooltip: 'Exportar PDF',
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                ),
               ],
             ),
             if (entry.notes.isNotEmpty) ...[
